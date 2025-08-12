@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Alfalah BMI</title>
+  <style>
+    :root {
+      --bg-dark: #0a0a0a;
+      --gold-start: #d4af37;
+      --gold-end: #f5d76e;
+      --text-light: #fdf6e3;
+      --glass: rgba(255, 255, 255, 0.05);
+      --muted: #bba95f;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--text-light);
+      background: linear-gradient(180deg, #070704 0%, #0a0a0a 100%);
+    }
+    .wrap {
+      width: 100%;
+      max-width: 900px;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(212, 175, 55, 0.1), rgba(245, 215, 110, 0.05));
+      border-radius: 14px;
+      padding: 24px 28px;
+      box-shadow: 0 8px 35px rgba(212, 175, 55, 0.7);
+      border: 1.5px solid var(--gold-start);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--gold-start), var(--gold-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: default;
+      user-select: none;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .lang-btn {
+      background: linear-gradient(90deg, var(--gold-start), var(--gold-end));
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      color: var(--bg-dark);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    .lang-btn:hover {
+      background: linear-gradient(90deg, var(--gold-end), var(--gold-start));
+    }
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 18px;
+    }
+    label {
+      font-size: 14px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+      user-select: none;
+    }
+    input[type="number"], select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--gold-start);
+      background: var(--glass);
+      color: var(--text-light);
+      font-size: 16px;
+      font-weight: 600;
+      transition: border-color 0.3s ease;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none;
+      border-color: var(--gold-end);
+      box-shadow: 0 0 8px var(--gold-end);
+      background: rgba(245, 215, 110, 0.15);
+    }
+    .full {
+      grid-column: 1 / -1;
+    }
+    .actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    button {
+      flex: 1;
+      background: linear-gradient(90deg, var(--gold-start), var(--gold-end));
+      border: none;
+      color: var(--bg-dark);
+      font-weight: 700;
+      padding: 12px 0;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 17px;
+      user-select: none;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(90deg, var(--gold-end), var(--gold-start));
+    }
+    .result {
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(245, 215, 110, 0.1);
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      color: var(--bg-dark);
+      font-weight: 700;
+      user-select: none;
+    }
+    .bignum {
+      font-size: 44px;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--gold-start), var(--gold-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .category {
+      font-size: 22px;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .hint {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: white;
+      user-select: text;
+    }
+    footer {
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      user-select: none;
+    }
+
+    /* BMI category colored bar container */
+    #bmiChart {
+      width: 250px;
+      height: 22px;
+      border-radius: 12px;
+      background: linear-gradient(
+        to right,
+        #4a90e2 0%,      /* underweight - blue */
+        #4a90e2 25%,
+        #44b749 25%,     /* normal - green */
+        #44b749 50%,
+        #f5a623 50%,     /* overweight - orange */
+        #f5a623 75%,
+        #d0021b 75%,     /* obesity - red */
+        #d0021b 100%
+      );
+      position: relative;
+      margin-top: 10px;
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+    }
+    /* Marker */
+    #bmiMarker {
+      position: absolute;
+      top: -5px;
+      width: 8px;
+      height: 32px;
+      background: var(--bg-dark);
+      border: 2.5px solid var(--gold-start);
+      border-radius: 4px;
+      transition: left 0.4s ease;
+    }
+
+    @media (max-width: 640px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+      .bignum {
+        font-size: 36px;
+      }
+      #bmiChart {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main" aria-label="Alfalah BMI Calculator">
+    <div class="card">
+      <header>
+        <h1 id="title">Alfalah BMI</h1>
+        <div class="controls">
+          <button class="lang-btn" id="toggleLang" aria-label="Switch language">বাংলা</button>
+        </div>
+      </header>
+
+      <form id="bmiForm" onsubmit="return false;" aria-describedby="description">
+        <div>
+          <label id="labelWeight" for="weight">Weight</label>
+          <input id="weight" name="weight" type="number" step="0.1" min="0" placeholder="e.g. 70" required aria-required="true" />
+        </div>
+        <div>
+          <label id="labelHeight" for="height">Height</label>
+          <input id="height" name="height" type="number" step="0.1" min="0" placeholder="e.g. 170" required aria-required="true" />
+        </div>
+        <div>
+          <label id="labelUnits" for="units">Units</label>
+          <select id="units" name="units" aria-labelledby="labelUnits">
+            <option value="metric">kg, cm</option>
+            <option value="imperial">lb, in</option>
+          </select>
+        </div>
+        <div>
+          <label id="labelAge" for="age">Age (optional)</label>
+          <input id="age" name="age" type="number" min="0" placeholder="e.g. 30" />
+        </div>
+
+        <div class="full actions">
+          <button id="calcBtn" type="button" aria-label="Calculate BMI">Calculate BMI</button>
+          <button id="resetBtn" type="button" aria-label="Reset form">Reset</button>
+        </div>
+
+        <div class="full result" id="resultBox" hidden aria-live="polite" aria-atomic="true">
+          <div>
+            <div class="bignum" id="bmiValue">0.0</div>
+            <div class="hint" id="bmiText">BMI</div>
+            <div id="bmiChart" aria-label="BMI Category Chart">
+              <div id="bmiMarker" role="presentation" style="left:0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="category" id="bmiCategory">Category</div>
+            <div class="hint" id="idealRange">Ideal weight range: -</div>
+            <div class="hint" id="advice">Tip: keep active and eat balanced meals.</div>
+          </div>
+        </div>
+
+        <div class="full" style="margin-top:8px" id="description">
+          <div class="hint" style="color: var(--muted); user-select:none;">
+            BMI formula: weight (kg) / (height (m))² — units convert automatically.
+          </div>
+        </div>
+      </form>
+
+      <footer>
+        © 2025 Alfalah — Elevate your health, embrace luxury.<br />
+        তোমার স্বাস্থ্যকে উন্নত করো, বিলাসিতা গ্রহণ করো।
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const texts = {
+      en: {
+        title: 'Alfalah BMI',
+        weight: 'Weight',
+        height: 'Height',
+        units: 'Units',
+        age: 'Age (optional)',
+        calc: 'Calculate BMI',
+        reset: 'Reset',
+        bmi: 'BMI',
+        category: 'Category',
+        ideal: 'Ideal weight range:',
+        advice: '',
+        adviceUnderweight: 'Tip: Consider a nutritious diet to gain healthy weight.',
+        adviceNormal: 'Tip: Maintain your healthy lifestyle.',
+        adviceOverweight: 'Tip: Consider regular exercise and balanced diet.',
+        adviceObesity: 'Tip: Consult a healthcare professional for guidance.',
+        langBtn: 'বাংলা'
+      },
+      bn: {
+        title: 'আলফালাহ বিএমআই',
+        weight: 'ওজন',
+        height: 'উচ্চতা',
+        units: 'একক',
+        age: 'বয়স (ঐচ্ছিক)',
+        calc: 'বিএমআই গণনা',
+        reset: 'রিসেট',
+        bmi: 'বিএমআই',
+        category: 'শ্রেণী',
+        ideal: 'আদর্শ ওজন সীমা:',
+        advice: '',
+        adviceUnderweight: 'পরামর্শ: স্বাস্থ্যকর ওজন বৃদ্ধির জন্য পুষ্টিকর আহার নিন।',
+        adviceNormal: 'পরামর্শ: আপনার সুস্থ জীবনযাপন বজায় রাখুন।',
+        adviceOverweight: 'পরামর্শ: নিয়মিত ব্যায়াম ও সুষম আহার বিবেচনা করুন।',
+        adviceObesity: 'পরামর্শ: দিকনির্দেশনার জন্য স্বাস্থ্য বিশেষজ্ঞের সঙ্গে পরামর্শ করুন।',
+        langBtn: 'English'
+      }
+    };
+
+    let lang = 'en';
+
+    const els = {
+      toggleLang: document.getElementById('toggleLang'),
+      title: document.getElementById('title'),
+      labelWeight: document.getElementById('labelWeight'),
+      labelHeight: document.getElementById('labelHeight'),
+      labelUnits: document.getElementById('labelUnits'),
+      labelAge: document.getElementById('labelAge'),
+      calcBtn: document.getElementById('calcBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      bmiValue: document.getElementById('bmiValue'),
+      bmiText: document.getElementById('bmiText'),
+      bmiCategory: document.getElementById('bmiCategory'),
+      idealRange: document.getElementById('idealRange'),
+      advice: document.getElementById('advice'),
+      resultBox: document.getElementById('resultBox'),
+      bmiMarker: document.getElementById('bmiMarker')
+    };
+
+    function applyLang() {
+      const t = texts[lang];
+      els.title.textContent = t.title;
+      els.labelWeight.textContent = t.weight;
+      els.labelHeight.textContent = t.height;
+      els.labelUnits.textContent = t.units;
+      els.labelAge.textContent = t.age;
+      els.calcBtn.textContent = t.calc;
+      els.resetBtn.textContent = t.reset;
+      els.bmiText.textContent = t.bmi;
+      els.bmiCategory.textContent = t.category;
+      els.idealRange.textContent = t.ideal + ' -';
+      els.advice.textContent = '';
+      els.toggleLang.textContent = t.langBtn;
+    }
+
+    function classifyBMI(bmi) {
+      if (bmi === null || isNaN(bmi)) return '—';
+      if (bmi < 18.5) return lang === 'en' ? 'Underweight' : 'ওজন কম';
+      if (bmi < 25) return lang === 'en' ? 'Normal weight' : 'সাধারণ/স্বাভাবিক';
+      if (bmi < 30) return lang === 'en' ? 'Overweight' : 'ওজন বেশি';
+      return lang === 'en' ? 'Obesity' : 'অতিরিক্ত স্থূলতা';
+    }
+
+    function calculateIdealRange(heightM) {
+      const lowKg = 18.5 * heightM * heightM;
+      const highKg = 24.9 * heightM * heightM;
+      return [lowKg, highKg];
+    }
+
+    function updateBMIChart(bmi) {
+      // BMI scale from 10 to 40
+      const min = 10;
+      const max = 40;
+      let clamped = Math.min(Math.max(bmi, min), max);
+      // position as percent across the 250px width bar
+      let percent = ((clamped - min) / (max - min)) * 100;
+      els.bmiMarker.style.left = `calc(${percent}% - 5px)`;
+    }
+
+    function updateAdvice(bmi) {
+      if (bmi < 18.5) els.advice.textContent = texts[lang].adviceUnderweight;
+      else if (bmi < 25) els.advice.textContent = texts[lang].adviceNormal;
+      else if (bmi < 30) els.advice.textContent = texts[lang].adviceOverweight;
+      else els.advice.textContent = texts[lang].adviceObesity;
+    }
+
+    applyLang();
+
+    els.toggleLang.addEventListener('click', () => {
+      lang = lang === 'en' ? 'bn' : 'en';
+      applyLang();
+      els.resultBox.hidden = true; // hide previous result on lang change
+    });
+
+    els.calcBtn.addEventListener('click', () => {
+      const weight = parseFloat(document.getElementById('weight').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const units = document.getElementById('units').value;
+
+      if (!weight || !height || weight <= 0 || height <= 0) {
+        alert(lang === 'en' ? 'Please enter valid weight and height.' : 'সঠিক ওজন ও উচ্চতা লিখুন।');
+        return;
+      }
+
+      let weightKg = weight;
+      let heightM = height;
+      if (units === 'metric') {
+        heightM = height / 100.0;
+      } else {
+        weightKg = weight * 0.45359237;
+        heightM = height * 0.0254;
+      }
+
+      const bmi = weightKg / (heightM * heightM);
+      const bmiRounded = Math.round(bmi * 10) / 10;
+
+      const category = classifyBMI(bmiRounded);
+      const range = calculateIdealRange(heightM);
+      const low = Math.round(range[0] * 10) / 10;
+      const high = Math.round(range[1] * 10) / 10;
+
+      els.bmiValue.textContent = bmiRounded.toFixed(1);
+      els.bmiCategory.textContent = category;
+      els.idealRange.textContent = (lang === 'en' ? 'Ideal weight range:' : 'আদর্শ ওজন সীমা:') + ` ${low} kg — ${high} kg`;
+
+      updateAdvice(bmiRounded);
+      updateBMIChart(bmiRounded);
+
+      els.resultBox.hidden = false;
+    });
+
+    els.resetBtn.addEventListener('click', () => {
+      document.getElementById('bmiForm').reset();
+      els.resultBox.hidden = true;
+      els.advice.textContent = '';
+    });
+
+    // Support Enter key to trigger calculate
+    document.getElementById('bmiForm').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        els.calcBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
